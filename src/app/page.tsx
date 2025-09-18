@@ -1381,7 +1381,6 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
 
   // handler para inputs de texto/data/email (todos string)
   // dentro do componente onde declarou FormState e setField:
-
 const handleText = useCallback(
   (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
