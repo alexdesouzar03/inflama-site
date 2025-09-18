@@ -1380,13 +1380,17 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
   );
 
   // handler para inputs de texto/data/email (todos string)
-  const handleText = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const key = e.target.name as keyof FormState;
-      setField(key, e.target.value as FormState[typeof key]);
-    },
-    [setField]
-  );
+  // dentro do componente onde declarou FormState e setField:
+
+const handleText = useCallback(
+  (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const key = name as keyof FormState;
+    // value é string (input de texto/data/email); setField espera o tipo de FormState[key]
+    setField(key, value as FormState[typeof key]);
+  },
+  [setField]
+);
 
   // monta a mensagem personalizada do WhatsApp
   const buildWhatsAppLink = useCallback(
