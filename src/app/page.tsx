@@ -149,8 +149,11 @@ function Section({
 }
 
 /* =================== NAVBAR =================== */
+/* =================== NAVBAR =================== */
 function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
   const [open, setOpen] = useState(false);
+  const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
+
   const LINKS = [
     { href: "#sobre", label: "Sobre" },
     { href: "#destaques", label: "Destaques" },
@@ -161,6 +164,32 @@ function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
     { href: "#faq", label: "FAQ" },
     { href: "#contato", label: "Contato" },
   ];
+
+  // bloqueia o scroll do body quando o menu está aberto
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    // foca no primeiro link
+    const t = setTimeout(() => firstLinkRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  // fecha com ESC
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const closeAnd = (fn?: () => void) => () => {
+    setOpen(false);
+    fn?.();
+  };
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-zinc-950/75 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -170,13 +199,20 @@ function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
             InFLAMA 2025
           </span>
         </a>
+
+        {/* desktop */}
         <nav className="hidden md:flex items-center gap-7 text-zinc-200">
           {LINKS.map((l) => (
             <a key={l.href} href={l.href} className="hover:text-orange-500 transition">
               {l.label}
             </a>
           ))}
-          <a href={CONTATO.instagram} target="_blank" className="inline-flex items-center gap-2 hover:text-orange-500 transition">
+          <a
+            href={CONTATO.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 hover:text-orange-500 transition"
+          >
             <Instagram className="h-5 w-5" />
             <span className="hidden lg:inline">{CONTATO.instagramHandle}</span>
           </a>
@@ -187,10 +223,95 @@ function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
             Inscreva-se
           </button>
         </nav>
-        <button aria-label={open ? "Fechar menu" : "Abrir menu"} onClick={() => setOpen((v) => !v)} className="md:hidden text-zinc-200 hover:text-orange-500">
+
+        {/* botão mobile */}
+        <button
+          aria-label={open ? "Fechar menu" : "Abrir menu"}
+          onClick={() => setOpen((v) => !v)}
+          className="md:hidden text-zinc-200 hover:text-orange-500"
+        >
           {open ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
+
+      {/* drawer mobile */}
+      {open && (
+        <div
+          className="md:hidden fixed inset-0 z-[60]"
+          aria-hidden={!open}
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70"
+            onClick={() => setOpen(false)}
+          />
+
+          {/* painel */}
+          <aside
+            className="absolute right-0 top-0 h-full w-[82%] max-w-sm bg-zinc-950 border-l border-neutral-800 shadow-2xl
+                       translate-x-0 animate-[slideIn_.2s_ease-out] p-6 flex flex-col gap-4"
+            // proteção pra não fechar ao clicar dentro
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold">Menu</span>
+              <button
+                className="p-2 rounded-lg hover:bg-neutral-900"
+                aria-label="Fechar"
+                onClick={() => setOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <nav className="mt-2 grid gap-3 text-zinc-200">
+              {LINKS.map((l, i) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  ref={i === 0 ? firstLinkRef : undefined}
+                  className="rounded-lg px-3 py-2 hover:bg-neutral-900 hover:text-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/40"
+                  onClick={closeAnd()}
+                >
+                  {l.label}
+                </a>
+              ))}
+
+              <a
+                href={CONTATO.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral-900 hover:text-orange-400"
+                onClick={closeAnd()}
+              >
+                <Instagram className="h-5 w-5" />
+                {CONTATO.instagramHandle}
+              </a>
+
+              <button
+                onClick={closeAnd(onOpenForm)}
+                className="mt-2 rounded-xl bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
+              >
+                Inscreva-se
+              </button>
+            </nav>
+          </aside>
+        </div>
+      )}
+
+      {/* animação simples */}
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0%);
+          }
+        }
+      `}</style>
     </header>
   );
 }
@@ -707,7 +828,7 @@ function Lineup() {
       <h3 className="mb-4 text-lg font-semibold text-zinc-400">Louvor</h3>
       <div className="grid gap-6 md:grid-cols-3">
         <article className="rounded-2xl bg-zinc-900/70 ring-1 ring-zinc-800 p-6 text-center">
-          <h4 className="text-2xl font-bold text-white">Ministério Colo de Deus</h4>
+          <h4 className="text-2xl font-bold text-white">Ministério da Colo de Deus</h4>
           <p className="mt-3 text-zinc-300">Conduzindo momentos intensos de louvor e adoração durante o retiro.</p>
         </article>
       </div>
