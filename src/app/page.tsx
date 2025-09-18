@@ -1284,12 +1284,30 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
   // WhatsApp de recebimento dos comprovantes
   const WHATSAPP = { phone: "5543991397163", display: "+55 43 99139-7163" };
 
-  const [form, setForm] = useState({
+  // ---- TIPOS SEGUROS (sem any) ----
+  type FormState = {
+    nome: string;
+    email: string;
+    nascimento: string; // yyyy-mm-dd
+    cidade: string;
+    sexo: Sexo | "";
+    alergias: string;
+    restricoes: string;
+    resp1Nome: string;
+    resp1Tel: string;
+    resp2Nome: string;
+    resp2Tel: string;
+    termoMenor: boolean;
+  };
+
+  type PixData = { copiaCola: string };
+
+  const [form, setForm] = useState<FormState>({
     nome: "",
     email: "",
-    nascimento: "", // yyyy-mm-dd
+    nascimento: "",
     cidade: "",
-    sexo: "" as Sexo | "",
+    sexo: "",
     alergias: "",
     restricoes: "",
     resp1Nome: "",
@@ -1300,7 +1318,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
   });
 
   const [openPixModal, setOpenPixModal] = useState(false);
-  const [pixData, setPixData] = useState<{ copiaCola: string } | null>(null);
+  const [pixData, setPixData] = useState<PixData | null>(null);
 
   // prazo (30 minutos) + contador
   const [deadline, setDeadline] = useState<number | null>(null);
@@ -1330,7 +1348,6 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
   const maxBirth = useMemo(() => {
     const t = new Date();
     t.setFullYear(t.getFullYear() - 12);
-    // yyyy-mm-dd
     return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(
       t.getDate()
     ).padStart(2, "0")}`;
@@ -1354,18 +1371,19 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     return e;
   }, [form, idade]);
 
-  // handlers estáveis evitam recriar funções a cada tecla
+  // ---- SETTERS ESTÁVEIS E TIPADOS ----
   const setField = useCallback(
-    <K extends keyof typeof form>(key: K, val: (typeof form)[K]) => {
-      setForm((f) => (f[key] === val ? f : { ...f, [key]: val }));
+    <K extends keyof FormState>(key: K, val: FormState[K]) => {
+      setForm((f) => (Object.is(f[key], val) ? f : { ...f, [key]: val }));
     },
     []
   );
 
+  // handler para inputs de texto/data/email (todos string)
   const handleText = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { name, value } = e.target;
-      setField(name as keyof typeof form, value as any);
+      const key = e.target.name as keyof FormState;
+      setField(key, e.target.value as FormState[typeof key]);
     },
     [setField]
   );
@@ -1387,7 +1405,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
         `Anexo o comprovante do pagamento. Obrigado!`;
       return `https://wa.me/${WHATSAPP.phone}?text=${encodeURIComponent(msg)}`;
     },
-    [form, WHATSAPP.phone]
+    [form]
   );
 
   // SUBMIT — salva e abre modal com copia-e-cola
@@ -1406,7 +1424,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
           email: form.email,
           telefone: form.resp1Tel,
           cidade: form.cidade,
-          sexo: form.sexo,
+          sexo: form.sexo || "",
           nascimento: form.nascimento,
           resp1: `${form.resp1Nome} - ${form.resp1Tel}`,
           resp2: `${form.resp2Nome} - ${form.resp2Tel}`,
