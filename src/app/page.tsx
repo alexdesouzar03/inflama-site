@@ -507,7 +507,7 @@ function SobreRetiro() {
     {
       icon: <UsersRound className="h-6 w-6 text-orange-500" aria-hidden />,
       title: "Convívio e amizade",
-      text: "Três dias intensos de partilha e novas conexões que viram família.",
+      text: "Dois dias intensos de partilha e novas conexões que viram família.",
     },
     {
       icon: <Sparkles className="h-6 w-6 text-orange-500" aria-hidden />,
