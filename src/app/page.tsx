@@ -15,7 +15,6 @@ import {
   Flame,
   Music2,
   UsersRound,
-  Star,
   ChevronRight,
   ChevronLeft,
   Gamepad2,
@@ -250,8 +249,7 @@ function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
 
           {/* painel */}
           <aside
-            className="absolute right-0 top-0 h-full w-[82%] max-w-sm bg-zinc-950 border-l border-neutral-800 shadow-2xl
-                       translate-x-0 animate-[slideIn_.2s_ease-out] p-6 flex flex-col gap-4"
+            className="absolute right-0 top-0 h-full w-[82%] max-w-sm bg-zinc-950 border-l border-neutral-800 shadow-2xl translate-x-0 animate-[slideIn_.2s_ease-out] p-6 flex flex-col gap-4"
             // proteção pra não fechar ao clicar dentro
             onClick={(e) => e.stopPropagation()}
           >
@@ -1398,10 +1396,6 @@ function Field({
 function InscricaoForm({ onClose }: { onClose: () => void }) {
   type Sexo = "M" | "F";
 
-  // PIX copia-e-cola FIXO (o seu)
-  const PIX_COPIA_E_COLA =
-    "00020126750014br.gov.bcb.pix0136410d84bb-07aa-4001-8890-e96f658ef9d30213InscricoesJfs5204000053039865406150.005802BR5925Alexsandro de Souza Rocha6009Sao Paulo610901227-20062230519daqr2390520017977086304C93E";
-
   // WhatsApp de recebimento dos comprovantes
   const WHATSAPP = { phone: "5543991397163", display: "+55 43 99139-7163" };
 
@@ -1444,6 +1438,8 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
   // prazo (30 minutos) + contador
   const [deadline, setDeadline] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<string>("");
+  // evita cliques múltiplos no botão Enviar
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!deadline) return;
@@ -1494,23 +1490,19 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
 
   // ---- SETTERS ESTÁVEIS E TIPADOS ----
   const setField = useCallback(
-    <K extends keyof FormState>(key: K, val: FormState[K]) => {
-      setForm((f) => (Object.is(f[key], val) ? f : { ...f, [key]: val }));
+    (key: keyof FormState, val: FormState[keyof FormState]) => {
+      setForm((f) => (Object.is(f[key], val) ? f : ({ ...f, [key]: val } as FormState)));
     },
     []
   );
 
-  // handler para inputs de texto/data/email (todos string)
-  // dentro do componente onde declarou FormState e setField:
-const handleText = useCallback(
-  (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const key = name as keyof FormState;
-    // value é string (input de texto/data/email); setField espera o tipo de FormState[key]
-    setField(key, value as FormState[typeof key]);
-  },
-  [setField]
-);
+  const handleText = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setField(name as keyof FormState, value);
+    },
+    [setField]
+  );
 
   // monta a mensagem personalizada do WhatsApp
   const buildWhatsAppLink = useCallback(
@@ -1537,11 +1529,15 @@ const handleText = useCallback(
     async (ev: React.FormEvent) => {
       ev.preventDefault();
 
+      // já está enviando? evita múltiplos cliques
+      if (isSubmitting) return;
+
       if (Object.keys(errors).length) {
         alert("Corrija os campos destacados.");
         return;
       }
 
+      setIsSubmitting(true);
       try {
         await salvarInscricao({
           nome: form.nome,
@@ -1562,9 +1558,11 @@ const handleText = useCallback(
       } catch (e) {
         console.error(e);
         alert("Não foi possível enviar. Tente novamente.");
+      } finally {
+        setIsSubmitting(false);
       }
     },
-    [errors, form]
+    [errors, form, isSubmitting]
   );
 
   // util copiar
@@ -1579,6 +1577,7 @@ const handleText = useCallback(
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      <fieldset disabled={isSubmitting} className={isSubmitting ? "opacity-75" : ""}>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field id="nome" label="Nome completo" error={errors.nome}>
           <input
@@ -1765,9 +1764,14 @@ const handleText = useCallback(
           </button>
           <button
             type="submit"
-            className={`inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r ${COLORS.grad} font-semibold`}
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+            className={`inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r ${COLORS.grad} font-semibold transition ${
+              isSubmitting ? "opacity-60 cursor-not-allowed" : ""
+            }`}
           >
-            <QrCode className="h-5 w-5" /> Enviar inscrição
+            <QrCode className="h-5 w-5" />
+            {isSubmitting ? "Enviando..." : "Enviar inscrição"}
           </button>
         </div>
       </div>
@@ -1823,6 +1827,7 @@ const handleText = useCallback(
           </div>
         </div>
       )}
+      </fieldset>
     </form>
   );
 }
