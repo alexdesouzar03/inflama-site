@@ -1,0 +1,3 @@
+// PIX copia-e-cola usado no formulário/checkout
+export const PIX_COPIA_E_COLA =
+  "00020126750014br.gov.bcb.pix0136410d84bb-07aa-4001-8890-e96f658ef9d30213InscricoesJfs5204000053039865406150.005802BR5925Alexsandro de Souza Rocha6009Sao Paulo610901227-20062230519daqr2390520017977086304C93E";

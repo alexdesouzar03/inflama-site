@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 // 👇 ajuste o caminho conforme a sua estrutura: src/lib/inscricoes.ts
 import { salvarInscricao } from "../lib/inscricoes"; 
+import { PIX_COPIA_E_COLA } from "../lib/pix";
 // se você não usa alias "@", use caminho relativo:
 // import { salvarInscricao } from "../lib/inscricoes";
 
@@ -30,10 +31,6 @@ import {
   Globe,
   Instagram,
 } from "lucide-react";
-
-// === PIX estático (copia-e-cola) ===
-export const PIX_COPIA_E_COLA =
-  "00020126750014br.gov.bcb.pix0136410d84bb-07aa-4001-8890-e96f658ef9d30213InscricoesJfs5204000053039865406150.005802BR5925Alexsandro de Souza Rocha6009Sao Paulo610901227-20062230519daqr2390520017977086304C93E";
 
 /* =================== CONFIG =================== */
 const COLORS = {
