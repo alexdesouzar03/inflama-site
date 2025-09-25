@@ -90,7 +90,7 @@ function calcCountdown(targetISO: string, nowMs: number) {
   const target = new Date(targetISO).getTime();
   const diff = Math.max(0, target - nowMs);
   return {
-    dias: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    dias: Math.ceil(diff / (1000 * 60 * 60 * 24)),
     horas: Math.floor((diff / (1000 * 60 * 60)) % 24),
     minutos: Math.floor((diff / (1000 * 60)) % 60),
     segundos: Math.floor((diff / 1000) % 60),
