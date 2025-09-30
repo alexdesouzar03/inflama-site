@@ -66,7 +66,7 @@ export default function WalletCheckout({ open = true }: Props) {
       });
       const data = await res.json();
       if (res.ok && data?.init_point) {
-        window.open(data.init_point, "_blank");
+        window.location.href = data.init_point;
       } else {
         console.error("Checkout redirect error:", res.status, data);
         alert("Não foi possível abrir o checkout. Tente novamente.");
