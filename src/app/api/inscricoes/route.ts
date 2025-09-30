@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// URL pública do seu Apps Script (Web App)
+const GAS_URL =
+  "https://script.google.com/macros/s/AKfycbx2ncaZ8IbYnnf-eQzTUEC85uByEFBnLACbycvx-E2vrCWD9m3ZsmZbXpKuN_oKRo21/exec";
+
 const CAMPOS_OBRIGATORIOS = [
   "nome",
   "email",
@@ -10,9 +14,6 @@ const CAMPOS_OBRIGATORIOS = [
   "cidade",
   "nascimento",
 ];
-
-// Permite enviar para um endpoint externo (Sheets, Zapier, etc.) via env
-const URL_WEBHOOK = process.env.INSCRICOES_WEBHOOK_URL;
 
 export async function POST(req: NextRequest) {
   let corpo: Record<string, unknown>;
@@ -46,13 +47,8 @@ export async function POST(req: NextRequest) {
     criadoEm: new Date().toISOString(),
   };
 
-  if (!URL_WEBHOOK) {
-    console.log("[INSCRICOES] Nenhum webhook configurado; salvando apenas em log", inscricao);
-    return NextResponse.json({ ok: true });
-  }
-
   try {
-    const respostaWebhook = await fetch(URL_WEBHOOK, {
+    const respostaWebhook = await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(inscricao),
@@ -63,7 +59,7 @@ export async function POST(req: NextRequest) {
     try { resposta = JSON.parse(texto); } catch { resposta = { bruto: texto }; }
 
     if (!respostaWebhook.ok) {
-      console.error("[INSCRICOES] Webhook falhou", respostaWebhook.status, resposta);
+      console.error("[INSCRICOES] GAS falhou", respostaWebhook.status, resposta);
       return NextResponse.json(
         { ok: false, erro: `Falha ao encaminhar inscrição (HTTP ${respostaWebhook.status})` },
         { status: 502 }
@@ -72,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, encaminhado: true, resposta });
   } catch (err: any) {
-    console.error("[INSCRICOES] Erro ao chamar webhook", err);
+    console.error("[INSCRICOES] Erro ao chamar GAS", err);
     return NextResponse.json(
       { ok: false, erro: "Erro interno ao registrar inscrição" },
       { status: 500 }
