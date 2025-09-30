@@ -44,7 +44,14 @@ export async function POST(req: NextRequest) {
 
     const pref = await preference.create({
       body: {
-        items: [{ id: `inscricao-${metodo}`, title: `${titleBase} – ${metodo === "credit" ? "Cartão" : "Pix"}`, quantity: 1, unit_price: Number(unitPrice) }],
+        items: [
+          {
+            id: `inscricao-${metodo}`,
+            title: `${titleBase} – ${metodo === "credit" ? "Cartão" : "Pix"}`,
+            quantity: 1,
+            unit_price: Number(unitPrice),
+          },
+        ],
         currency_id: "BRL",
         payment_methods: {
           excluded_payment_types,
