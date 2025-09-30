@@ -1,21 +1,15 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
-type Props = { open?: boolean }; // passe open={true} quando abrir o modal
+type Props = { open?: boolean };
 
 export default function WalletCheckout({ open = true }: Props) {
   const [prefId, setPrefId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [walletReady, setWalletReady] = useState(false);
-  const [fallbackInitPoint, setFallbackInitPoint] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isSafari = useMemo(
-    () => /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
-    []
-  );
 
   useEffect(() => {
     initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!, { locale: "pt-BR" });
@@ -26,13 +20,12 @@ export default function WalletCheckout({ open = true }: Props) {
     setError(null);
     setPrefId(null);
     setWalletReady(false);
-    setFallbackInitPoint(null);
 
     try {
       const res = await fetch("/api/mp/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Inscrição – InFLAMA 2025" }), // preço é definido no backend
+        body: JSON.stringify({ title: "Inscrição – InFLAMA 2025" }),
         cache: "no-store",
       });
 
@@ -42,20 +35,20 @@ export default function WalletCheckout({ open = true }: Props) {
 
       if (!res.ok || !data?.id) {
         console.error("Create pref response:", res.status, data);
-        const errText =
-          typeof data?.error === "string"
-            ? data.error
-            : data?.error
-              ? JSON.stringify(data.error)
-              : `Erro ao criar preferência (HTTP ${res.status})`;
-        setError(errText);
+        setError(data?.error || `Erro ao criar preferência (HTTP ${res.status})`);
         return;
       }
 
       setPrefId(data.id);
-      // guarda init_point para fallback
-      if (data?.init_point) setFallbackInitPoint(data.init_point);
-      setError(""); // exibe o fallback imediatamente
+      // Se o Wallet não ficar pronto rápido, cai para fallback (botões Pix/Cartão)
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        if (!walletReady) {
+          setError("FALLBACK");
+        }
+      }, 0);
+
+      setError(null);
     } catch (e: any) {
       console.error("Checkout preference error:", e);
       setError(e?.message || "Não foi possível iniciar o pagamento. Tente novamente.");
@@ -84,12 +77,10 @@ export default function WalletCheckout({ open = true }: Props) {
     }
   }
 
-  // busca a preferência toda vez que o modal abrir
   useEffect(() => {
     if (!open) return;
     createPreference();
     return () => { if (timer.current) clearTimeout(timer.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;
@@ -98,7 +89,6 @@ export default function WalletCheckout({ open = true }: Props) {
     return <div className="text-neutral-400 text-sm">Carregando formas de pagamento…</div>;
   }
 
-  // fallback UI: erro + botão “Pagar agora” via init_point
   if (error !== null) {
     return (
       <div className="text-sm space-y-3">
@@ -124,29 +114,36 @@ export default function WalletCheckout({ open = true }: Props) {
 
   if (!prefId) return null;
 
+  // Definimos customization como any para evitar erro de tipagem
+  const walletCustomization: any = {
+    paymentMethods: {
+      ticket: "none",
+      atm: "none",
+      bankTransfer: "all",
+      creditCard: "all",
+      debitCard: "none",
+      maxInstallments: 1,
+    },
+  };
+
   return (
-    <div className="min-h-[64px]"> {/* garante altura mínima visível */}
+    <div className="min-h-[64px]">
       <Wallet
         key={prefId}
         initialization={{ preferenceId: prefId }}
-        customization={{
-          paymentMethods: {
-            ticket: "none",
-            atm: "none",
-            bankTransfer: "all",  // Pix
-            creditCard: "all",
-            debitCard: "none",
-            maxInstallments: 1,
-          },
-        }}
+        customization={walletCustomization as any}
         onReady={() => {
           setWalletReady(true);
-          if (timer.current) clearTimeout(timer.current);
+          if (timer.current) {
+            clearTimeout(timer.current);
+            timer.current = null;
+          }
+          setError(null);
           console.log("Wallet pronto");
         }}
         onError={(e) => {
           console.error("Wallet SDK error:", e);
-          setError("Ocorreu um problema ao carregar o botão de pagamento. Tente novamente.");
+          setError("FALLBACK");
         }}
       />
     </div>

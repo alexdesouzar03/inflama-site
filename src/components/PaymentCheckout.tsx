@@ -18,28 +18,31 @@ export default function WalletCheckout() {
         const res = await fetch("/api/mp/create-preference", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: "Inscrição – InFLAMA 2025",
-            quantity: 1,
-            unit_price: 150,
-          }),
+          // preço é definido no backend; não precisamos enviar aqui
+          body: JSON.stringify({ title: "Inscrição – InFLAMA 2025" }),
+          cache: "no-store",
         });
 
-        // Parse robusto (não quebra se vier texto/HTML)
         const text = await res.text();
         let data: any = {};
         try { data = JSON.parse(text); } catch { data = { raw: text }; }
 
         if (!res.ok || !data?.id) {
           console.error("Create pref response:", res.status, data);
-          setError(data?.error || `Erro ao criar preferência (HTTP ${res.status})`);
-          return; // não lança erro, só mostra no modal
+          const errText =
+            typeof data?.error === "string"
+              ? data.error
+              : data?.error
+              ? JSON.stringify(data.error)
+              : `Erro ao criar preferência (HTTP ${res.status})`;
+          setError(errText);
+          return; // não lança erro, só mostra no UI
         }
 
         setPrefId(data.id);
       } catch (e: any) {
         console.error("Checkout preference error:", e);
-        setError("Não foi possível iniciar o pagamento. Tente novamente.");
+        setError(e?.message || "Não foi possível iniciar o pagamento. Tente novamente.");
       } finally {
         setLoading(false);
       }
@@ -67,49 +70,23 @@ export default function WalletCheckout() {
 
   if (!prefId) return null;
 
+  // Tipagem do SDK varia por versão; usamos any para manter os filtros de métodos
+  const walletCustomization: any = {
+    paymentMethods: {
+      ticket: "none",
+      atm: "none",
+      bankTransfer: "all",  // Pix
+      creditCard: "all",    // crédito
+      debitCard: "none",    // sem débito
+      maxInstallments: 1,     // 1x
+    },
+  };
+
   return (
     <div className="space-y-3">
-      {/* Botão de teste: abre o Checkout Pro via init_point */}
-      <button
-        type="button"
-        onClick={async () => {
-          try {
-            const res = await fetch("/api/mp/create-preference", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ title: "Teste", quantity: 1, unit_price: 150 }),
-            });
-            const text = await res.text();
-            let data: any = {};
-            try { data = JSON.parse(text); } catch { data = { raw: text }; }
-            if (res.ok && data?.init_point) {
-              window.open(data.init_point, "_blank");
-            } else {
-              alert("Erro ao criar preferência de teste. Veja o console.");
-              console.error("Resposta de teste:", res.status, data);
-            }
-          } catch (e) {
-            console.error(e);
-            alert("Falha na requisição de teste.");
-          }
-        }}
-        className="text-sm underline decoration-dotted"
-      >
-        Testar preferência (abrir Checkout Pro)
-      </button>
-
       <Wallet
         initialization={{ preferenceId: prefId }}
-        customization={{
-          paymentMethods: {
-            ticket: "none",       // sem boleto
-            atm: "none",          // sem caixa eletrônico
-            bankTransfer: "all",  // Pix
-            creditCard: "all",
-            debitCard: "all",
-            maxInstallments: 1,   // reforça 1x
-          },
-        }}
+        customization={walletCustomization as any}
       />
     </div>
   );
