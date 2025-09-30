@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 // 👇 ajuste o caminho conforme a sua estrutura: src/lib/inscricoes.ts
 import { salvarInscricao } from "../lib/inscricoes"; 
-import { PIX_COPIA_E_COLA } from "../lib/pix";
+// import { PIX_COPIA_E_COLA } from "../lib/pix";
 // se você não usa alias "@", use caminho relativo:
 // import { salvarInscricao } from "../lib/inscricoes";
 
@@ -31,6 +31,7 @@ import {
   Globe,
   Instagram,
 } from "lucide-react";
+import WalletCheckout from "../components/WalletCheckout";
 
 /* =================== CONFIG =================== */
 const COLORS = {
@@ -58,12 +59,12 @@ const CONTATO = {
   instagramHandle: "@juventudefogosanto",
 };
 
+// PIX (apenas para a seção "Apoio"). Se não quiser exibir, remova a seção <Apoio /> no final.
 const PIX = {
-  copiaCola:
-    "00020126760014br.gov.bcb.pix0136410d84bb-07aa-4001-8890-e96f658ef9d30214Doacao Retiro 5204000053039865802BR5925Alexsandro de Souza Rocha6009Sao Paulo610901227-20062230519daqr239052001348688630437C0",
-  chave: "410d84bb-07aa-4001-8890-e96f658ef9d3",
+  qrImage: "/doacao-qr.png",
   recebedor: "Alexsandro de Souza Rocha",
-  qrImage: "/doacao-qr.png", // coloque esse arquivo em /public
+  chave: "410d84bb-07aa-4001-8890-e96f658ef9d3",
+  copiaCola: "",
 };
 
 /* =================== UTILS =================== */
@@ -374,79 +375,7 @@ function Modal({
   );
 }
 
-/* ======= PIX estático (copia-e-cola) ======= */
-// use a constante PIX_COPIA_E_COLA definida no topo do arquivo
 
-function PixPagamentoModal({
-  open,
-  onClose,
-  copiaCola,        // passe PIX_COPIA_E_COLA aqui
-  mostrarQr = true, // só mostra o <img> se houver imagem em /public
-}: {
-  open: boolean;
-  onClose: () => void;
-  copiaCola: string;
-  mostrarQr?: boolean;
-}) {
-  async function copiar() {
-    try {
-      await navigator.clipboard.writeText(copiaCola);
-      alert("Código PIX copiado!");
-    } catch {
-      alert("Não foi possível copiar. Copie manualmente.");
-    }
-  }
-
-  if (!open) return null;
-
-  return (
-    <Modal open={open} onClose={onClose} title="Pagamento via PIX (R$ 150,00)">
-      <div className="space-y-4">
-        {/* QR estático (opcional) */}
-        {mostrarQr && (
-          <div className="flex justify-center">
-            <img
-              src="/pix-mp.png"  // precisa existir em /public
-              alt="QR Code do PIX"
-              className="w-64 h-64 rounded-lg border border-neutral-800"
-            />
-          </div>
-        )}
-
-        {/* Copia-e-cola */}
-        <div className="space-y-2">
-          <div className="text-sm text-neutral-300">PIX copia-e-cola</div>
-          <textarea
-            readOnly
-            value={copiaCola}
-            className="w-full h-32 resize-none rounded-xl bg-neutral-900 border border-neutral-800 p-3 text-sm"
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={copiar}
-              className="px-4 py-2 rounded-xl border border-neutral-700 hover:bg-neutral-800"
-            >
-              Copiar código
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-neutral-800 border border-neutral-700"
-            >
-              Fechar
-            </button>
-          </div>
-        </div>
-
-        <div className="text-xs text-neutral-400">
-          Beneficiário: <b className="text-neutral-200">Alexsandro de Souza Rocha</b> —{" "}
-          Instituição: <b className="text-neutral-200">Mercado Pago</b>
-        </div>
-      </div>
-    </Modal>
-  );
-}
 
 /* =================== HERO =================== */
 function HeroInflama({
@@ -1412,8 +1341,6 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     termoMenor: boolean;
   };
 
-  type PixData = { copiaCola: string };
-
   const [form, setForm] = useState<FormState>({
     nome: "",
     email: "",
@@ -1429,26 +1356,9 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     termoMenor: false,
   });
 
-  const [openPixModal, setOpenPixModal] = useState(false);
-  const [pixData, setPixData] = useState<PixData | null>(null);
-
-  // prazo (30 minutos) + contador
-  const [deadline, setDeadline] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState<string>("");
   // evita cliques múltiplos no botão Enviar
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!deadline) return;
-    const iv = setInterval(() => {
-      const diff = Math.max(0, deadline - Date.now());
-      const mm = String(Math.floor(diff / 60000)).padStart(2, "0");
-      const ss = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
-      setTimeLeft(`${mm}:${ss}`);
-      if (diff <= 0) clearInterval(iv);
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [deadline]);
+  const [openPay, setOpenPay] = useState(false);
 
   // idade (para exibir mensagens e validar mínimo)
   const idade = useMemo(() => {
@@ -1501,27 +1411,8 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     [setField]
   );
 
-  // monta a mensagem personalizada do WhatsApp
-  const buildWhatsAppLink = useCallback(
-    (copiaCola: string) => {
-      const msg =
-        `Olá! Sou ${form.nome}. Acabei de me inscrever no InFLAMA 2025.\n\n` +
-        `• Cidade: ${form.cidade}\n` +
-        `• Nascimento: ${form.nascimento}\n` +
-        `• Sexo: ${form.sexo}\n` +
-        (form.alergias ? `• Alergias/Condições: ${form.alergias}\n` : "") +
-        (form.restricoes ? `• Restrições alimentares: ${form.restricoes}\n` : "") +
-        `• Responsável 1: ${form.resp1Nome} – ${form.resp1Tel}\n` +
-        `• Responsável 2: ${form.resp2Nome} – ${form.resp2Tel}\n\n` +
-        `Valor: R$ 150,00\n` +
-        `Segue o código PIX copia-e-cola:\n${copiaCola}\n\n` +
-        `Anexo o comprovante do pagamento. Obrigado!`;
-      return `https://wa.me/${WHATSAPP.phone}?text=${encodeURIComponent(msg)}`;
-    },
-    [form]
-  );
 
-  // SUBMIT — salva e abre modal com copia-e-cola
+  // SUBMIT — salva e abre modal com pagamento
   const submit = useCallback(
     async (ev: React.FormEvent) => {
       ev.preventDefault();
@@ -1549,9 +1440,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
           restricoes: form.restricoes,
         });
 
-        setPixData({ copiaCola: PIX_COPIA_E_COLA });
-        setOpenPixModal(true);
-        setDeadline(Date.now() + 30 * 60 * 1000);
+        setOpenPay(true);
       } catch (e) {
         console.error(e);
         alert("Não foi possível enviar. Tente novamente.");
@@ -1561,16 +1450,6 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     },
     [errors, form, isSubmitting]
   );
-
-  // util copiar
-  const copiarCodigo = useCallback(async (codigo: string) => {
-    try {
-      await navigator.clipboard.writeText(codigo);
-      alert("Código PIX copiado!");
-    } catch {
-      /* noop */
-    }
-  }, []);
 
   return (
     <form onSubmit={submit} className="space-y-4">
@@ -1773,50 +1652,22 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* Modal simples: copia-e-cola + ações */}
-      {openPixModal && pixData && (
+      {/* Modal de pagamento */}
+      {openPay && (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/70 p-4">
-          <div className="max-w-md w-full rounded-2xl bg-neutral-950 border border-neutral-800 p-6">
-            <h3 className="font-bold text-white text-lg">Pagamento via PIX</h3>
-
+          <div className="max-w-lg w-full rounded-2xl bg-neutral-950 border border-neutral-800 p-6">
+            <h3 className="font-bold text-white text-lg">Pagamento</h3>
             <p className="mt-2 text-sm text-neutral-300">
-              Use o código abaixo para pagar. Para garantir sua vaga, finalize o pagamento em
-              <b className="text-white"> até {timeLeft || "30:00"} </b>.
+              Pague sua inscrição com cartão (à vista), débito ou Pix pelo Mercado Pago.
             </p>
-
-            <div className="mt-3 rounded-lg bg-neutral-900 border border-neutral-800 p-3 text-xs text-neutral-200 break-all">
-              {pixData.copiaCola}
+            <div className="mt-4">
+              <WalletCheckout />
             </div>
-
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                onClick={() => copiarCodigo(pixData.copiaCola)}
-                className="px-4 py-2 rounded-xl border border-neutral-700 hover:bg-neutral-800"
-                type="button"
-              >
-                Copiar código PIX
-              </button>
-
-              <a
-                href={buildWhatsAppLink(pixData.copiaCola)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white"
-              >
-                Enviar comprovante no WhatsApp
-              </a>
-            </div>
-
-            <p className="mt-3 text-xs text-neutral-400">
-              Dica: após pagar no app do banco, volte aqui e toque em “Enviar comprovante no WhatsApp”.
-              A mensagem já vai preenchida com seus dados — é só anexar o comprovante.
-              (WhatsApp: {WHATSAPP.display})
-            </p>
-
             <div className="mt-6 flex justify-end">
               <button
-                onClick={() => setOpenPixModal(false)}
+                onClick={() => setOpenPay(false)}
                 className="px-4 py-2 rounded-xl border border-neutral-700 hover:bg-neutral-800"
+                type="button"
               >
                 Fechar
               </button>
