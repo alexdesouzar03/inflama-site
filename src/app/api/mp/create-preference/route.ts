@@ -50,9 +50,9 @@ export async function POST(req: NextRequest) {
             title: `${titleBase} – ${metodo === "credit" ? "Cartão" : "Pix"}`,
             quantity: 1,
             unit_price: Number(unitPrice),
+            currency_id: "BRL",
           },
         ],
-        currency_id: "BRL",
         payment_methods: {
           excluded_payment_types,
           installments: 1,
