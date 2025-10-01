@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 // 👇 ajuste o caminho conforme a sua estrutura: src/lib/inscricoes.ts
-import { salvarInscricao } from "../lib/inscricoes"; 
+import { salvarInscricao } from "@/lib/inscricoes"; 
 // import { PIX_COPIA_E_COLA } from "../lib/pix";
 // se você não usa alias "@", use caminho relativo:
 // import { salvarInscricao } from "../lib/inscricoes";
@@ -1329,7 +1329,8 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
   type FormState = {
     nome: string;
     email: string;
-    nascimento: string; // yyyy-mm-dd
+    whatsapp: string;           
+    nascimento: string;
     cidade: string;
     sexo: Sexo | "";
     alergias: string;
@@ -1339,11 +1340,12 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     resp2Nome: string;
     resp2Tel: string;
     termoMenor: boolean;
-  };
+};
 
   const [form, setForm] = useState<FormState>({
     nome: "",
     email: "",
+    whatsapp: "",               
     nascimento: "",
     cidade: "",
     sexo: "",
@@ -1354,7 +1356,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     resp2Nome: "",
     resp2Tel: "",
     termoMenor: false,
-  });
+});
 
   // evita cliques múltiplos no botão Enviar
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1381,19 +1383,16 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     const e: Record<string, string> = {};
     if (!form.nome.trim()) e.nome = "Informe o nome";
     if (!form.email.trim()) e.email = "Informe o e-mail";
+    if (!form.whatsapp.trim()) e.whatsapp = "Informe o WhatsApp";  // 👈 novo
     if (!form.nascimento) e.nascimento = "Informe a data";
     if (!form.cidade.trim()) e.cidade = "Informe a cidade";
     if (!form.sexo) e.sexo = "Selecione";
-    // ✅ só idade mínima
     if (form.nascimento && idade < 12) e.nascimento = "Idade mínima: 12 anos";
-    if (!form.resp1Nome.trim() || !form.resp1Tel.trim())
-      e.resp1 = "Responsável 1 obrigatório";
-    if (!form.resp2Nome.trim() || !form.resp2Tel.trim())
-      e.resp2 = "Responsável 2 obrigatório";
-    if (idade < 16 && !form.termoMenor)
-      e.termo = "Obrigatório para menores de 16";
+    if (!form.resp1Nome.trim() || !form.resp1Tel.trim()) e.resp1 = "Responsável 1 obrigatório";
+    if (!form.resp2Nome.trim() || !form.resp2Tel.trim()) e.resp2 = "Responsável 2 obrigatório";
+    if (idade < 16 && !form.termoMenor) e.termo = "Obrigatório para menores de 16";
     return e;
-  }, [form, idade]);
+}, [form, idade]);
 
   // ---- SETTERS ESTÁVEIS E TIPADOS ----
   const setField = useCallback(
@@ -1430,7 +1429,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
         await salvarInscricao({
           nome: form.nome,
           email: form.email,
-          telefone: form.resp1Tel,
+          whatsapp: form.whatsapp,
           cidade: form.cidade,
           sexo: form.sexo || "",
           nascimento: form.nascimento,
@@ -1503,6 +1502,20 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             type="text"
             className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
             value={form.cidade}
+            onChange={handleText}
+          />
+        </Field>
+
+        <Field id="whatsapp" label="WhatsApp do retirante" error={errors.whatsapp}>
+          <input
+            id="whatsapp"
+            name="whatsapp"
+            type="text"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="(43) 9 9999-9999"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            value={form.whatsapp}
             onChange={handleText}
           />
         </Field>

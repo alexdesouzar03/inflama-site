@@ -3,59 +3,51 @@
 export type InscricaoPayload = {
   nome: string;
   email: string;
-  telefone: string;
+  whatsapp: string; // telefone do retirante
   cidade: string;
-  sexo: string;            // "M" | "F" | ...
-  nascimento: string;      // "YYYY-MM-DD" ou "DD/MM/YYYY"
-  resp1?: string;
-  resp2?: string;
+  sexo: string; // "M" | "F" | ""
+  nascimento: string; // "DD/MM/YYYY" ou "YYYY-MM-DD"
+  resp1?: string; // "Nome - Telefone"
+  resp2?: string; // "Nome - Telefone"
   alergias?: string;
   restricoes?: string;
 };
 
 /**
- * Envia a inscrição via API interna (evita CORS) e retorna true em caso de sucesso.
- * Lança erro com mensagem amigável se falhar.
+ * Envia a inscrição para a API interna `/api/inscricoes` (proxy do servidor → GAS).
+ * Retorna `true` em caso de sucesso; lança erro caso contrário.
  */
 export async function salvarInscricao(dados: InscricaoPayload): Promise<true> {
-  // Normaliza valores para string e evita undefined no corpo
+  // Normaliza para strings e remove undefined/null
   const payload: Record<string, string> = {};
   (Object.keys(dados) as (keyof InscricaoPayload)[]).forEach((k) => {
     const v = dados[k];
     if (v === undefined || v === null) return;
-    payload[k] = String(v);
+    payload[k] = String(v).trim();
   });
 
-  // Timeout de 15s para evitar travar a UI
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), 15000);
-
-  let res: Response;
-  try {
-    res = await fetch("/api/inscricoes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-      signal: controller.signal,
-    });
-  } catch (e: any) {
-    clearTimeout(t);
-    console.error("Falha de rede ao enviar inscrição:", e);
-    throw new Error("Não foi possível enviar a inscrição. Verifique sua conexão e tente novamente.");
+  // Normaliza data 1990-01-31 -> 31/01/1990
+  const v = payload.nascimento?.trim();
+  if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    const [y, m, d] = v.split("-");
+    payload.nascimento = `${d}/${m}/${y}`;
   }
 
-  clearTimeout(t);
+  const res = await fetch("/api/inscricoes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
 
-  // tenta ler a resposta com segurança
   const text = await res.text();
   let data: any = {};
   try { data = JSON.parse(text); } catch { data = { raw: text }; }
 
   if (!res.ok || data?.ok !== true) {
-    console.error("Falha ao salvar inscrição:", res.status, data);
-    const msg = data?.error || `Falha ao enviar inscrição (HTTP ${res.status})`;
-    throw new Error(msg);
+    throw new Error(
+      data?.erro || data?.error || data?.raw || `Falha ao enviar inscrição (HTTP ${res.status})`
+    );
   }
 
   return true;
