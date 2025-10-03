@@ -418,7 +418,7 @@ function HeroInflama({
             08–09 nov · Chácara Provérbios · Apucarana/PR
           </span>
           <span className="px-3 py-1 rounded-full bg-neutral-900/70 ring-1 ring-neutral-800">
-            Faixa etária: <b className="text-white">12–19</b> anos
+            Faixa etária: <b className="text-white">12–24</b> anos
           </span>
         </div>
 
@@ -1022,7 +1022,7 @@ function FAQ() {
               <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
             </summary>
             <div className="p-5 pt-0 text-neutral-300">
-              Jovens de 12 a 19 anos. As vagas são limitadas (80 participantes).
+              Jovens de 12 a 24 anos. As vagas são limitadas (80 participantes).
             </div>
           </details>
 
@@ -1071,7 +1071,8 @@ function FAQ() {
               <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
             </summary>
             <div className="p-5 pt-0 text-neutral-300">
-              O valor é R$ 150,00. O pagamento é apenas via PIX.
+              O valor é R$ 150,00 via PIX.
+              Ou R$ 158,00 via Cartão de Crédito.
             </div>
           </details>
 
@@ -1705,7 +1706,7 @@ export default function Page() {
         <HeroInflama
           eventStart={EVENTO.inicioISO}
           totalSeats={80}
-          remainingSeats={51}
+          remainingSeats={40}
           onInscrever={() => setOpenForm(true)}
         />
         <TemaBiblico />
