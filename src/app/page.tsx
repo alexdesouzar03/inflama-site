@@ -1706,7 +1706,7 @@ export default function Page() {
         <HeroInflama
           eventStart={EVENTO.inicioISO}
           totalSeats={80}
-          remainingSeats={33}
+          remainingSeats={15}
           onInscrever={() => setOpenForm(true)}
         />
         <TemaBiblico />
