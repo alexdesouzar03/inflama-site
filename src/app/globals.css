@@ -26,3 +26,55 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* === Correções visuais para inputs em tema escuro (Android/Chrome) === */
+input,
+textarea,
+select {
+  color: #ffffff;
+  caret-color: #ffffff;
+  background-color: #0a0a0a;
+}
+
+/* Placeholder visível */
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+/* Autofill (Android/Chrome dark mode) */
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0a0a0a inset !important;
+  box-shadow: 0 0 0px 1000px #0a0a0a inset !important;
+  transition: background-color 9999s ease-out 0s !important;
+}
+
+/* Estado de foco (realce amarelo) */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.4);
+  border-color: #facc15;
+}
+
+/* Fundo preto opaco para o menu mobile */
+.menu-overlay,
+.mobile-menu,
+.navbar-menu,
+.drawer-menu {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: blur(4px);
+  color: #fff;
+}
+
+/* Garante que o texto fique visível */
+.menu-overlay a,
+.mobile-menu a,
+.navbar-menu a {
+  color: #fff !important;
+}

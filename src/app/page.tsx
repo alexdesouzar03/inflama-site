@@ -1461,7 +1461,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             name="nome"
             type="text"
             autoComplete="name"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.nome}
             onChange={handleText}
           />
@@ -1473,7 +1473,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             name="email"
             type="email"
             autoComplete="email"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.email}
             onChange={handleText}
           />
@@ -1487,7 +1487,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             // ✅ permite digitar e ainda mostra o datepicker
             inputMode="numeric"
             pattern="\d{4}-\d{2}-\d{2}"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.nascimento}
             onChange={handleText}
             // ✅ apenas idade mínima (12 anos)
@@ -1501,7 +1501,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             id="cidade"
             name="cidade"
             type="text"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.cidade}
             onChange={handleText}
           />
@@ -1515,7 +1515,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             inputMode="tel"
             autoComplete="tel"
             placeholder="(43) 9 9999-9999"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.whatsapp}
             onChange={handleText}
           />
@@ -1556,7 +1556,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             id="alergias"
             name="alergias"
             type="text"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.alergias}
             onChange={handleText}
           />
@@ -1567,7 +1567,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             id="restricoes"
             name="restricoes"
             type="text"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.restricoes}
             onChange={handleText}
           />
@@ -1580,7 +1580,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             id="resp1Nome"
             name="resp1Nome"
             type="text"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.resp1Nome}
             onChange={handleText}
           />
@@ -1591,7 +1591,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             name="resp1Tel"
             type="text"
             inputMode="tel"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.resp1Tel}
             onChange={handleText}
           />
@@ -1604,7 +1604,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             id="resp2Nome"
             name="resp2Nome"
             type="text"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.resp2Nome}
             onChange={handleText}
           />
@@ -1615,7 +1615,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             name="resp2Tel"
             type="text"
             inputMode="tel"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800"
+            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
             value={form.resp2Tel}
             onChange={handleText}
           />
@@ -1734,6 +1734,25 @@ export default function Page() {
           </a>
         </div>
       </footer>
+
+      {/* Global style for Android/Chrome autofill and input contrast */}
+      <style jsx global>{`
+        /* Garanta contraste e visibilidade no Android/Chrome */
+        input, textarea, select { color:#ffffff; caret-color:#ffffff; }
+        input::placeholder, textarea::placeholder { color:#9ca3af; opacity:1; }
+        input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
+          -webkit-text-fill-color:#ffffff !important;
+          -webkit-box-shadow:0 0 0px 1000px #0a0a0a inset !important;
+          box-shadow:0 0 0px 1000px #0a0a0a inset !important;
+          transition: background-color 9999s ease-out 0s !important;
+        }
+        /* foco visível */
+        input:focus, textarea:focus, select:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.4);
+          border-color: #facc15;
+        }
+      `}</style>
 
       <Modal open={openForm} onClose={() => setOpenForm(false)} title="Inscrição – InFLAMA 2025">
         <InscricaoForm onClose={() => setOpenForm(false)} />
