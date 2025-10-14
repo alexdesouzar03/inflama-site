@@ -28,12 +28,23 @@ body {
 }
 
 /* === Correções visuais para inputs em tema escuro (Android/Chrome) === */
-input,
+/* Aplica apenas a campos de texto (evita interferir em radio/checkbox) */
+input:not([type="radio"]):not([type="checkbox"]):not([type="range"]),
 textarea,
 select {
   color: #ffffff;
   caret-color: #ffffff;
   background-color: #0a0a0a;
+}
+
+/* Radios & checkboxes: mantém aparência nativa e cor consistente */
+input[type="radio"],
+input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  background-color: transparent;
+  border: none;
+  accent-color: #f59e0b; /* amber-500 */
 }
 
 /* Placeholder visível */
