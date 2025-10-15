@@ -1674,6 +1674,10 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             <p className="mt-2 text-sm text-neutral-300">
               Pague sua inscrição com cartão (à vista), débito ou Pix pelo Mercado Pago.
             </p>
+            <div className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-amber-300 text-sm">
+              Sua vaga fica reservada por <b className="text-amber-200">24 horas</b> após o envio da inscrição.
+              Se o pagamento não for identificado nesse prazo, a inscrição é <b className="text-amber-200">cancelada automaticamente</b> e a vaga retorna para a lista.
+            </div>
             <div className="mt-4">
               <WalletCheckout />
             </div>
