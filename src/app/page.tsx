@@ -155,7 +155,7 @@ function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
     { href: "#sobre", label: "Sobre" },
     { href: "#destaques", label: "Destaques" },
     { href: "#times", label: "Times" },
-    { href: "#lineup", label: "Line-up" },
+    { href: "#lineup", label: "Pregadores" },
     { href: "#o-que-levar", label: "O que levar" },
     { href: "#apoio", label: "Apoio" },
     { href: "#faq", label: "FAQ" },
@@ -734,40 +734,70 @@ function TimesInflama() {
   );
 }
 
-/* =================== LINE-UP =================== */
-function Lineup() {
-  const TEMAS = [
-    { titulo: "Chamados pelo Nome", descricao: "Deus nos escolhe e chama pessoalmente.", Icon: Sparkles },
-    { titulo: "Corações Livres", descricao: "Cura interior e libertação.", Icon: Heart },
-    { titulo: "Fogo que Transforma", descricao: "O Espírito Santo renova e acende a fé.", Icon: Flame },
-    { titulo: "Vida em Chamas", descricao: "Efusão do Espírito e vida conduzida por Ele.", Icon: Zap },
-    { titulo: "Luz no Mundo", descricao: "Ser testemunha até os confins da terra.", Icon: Globe },
+/* =================== PREGADORES (Grid com fotos) =================== */
+function Pregadores() {
+  const PREGADORES = [
+    { nome: "João Rêgo", cargo: "Colo de Deus", foto: "/pregadores/joao-rego.jpg" },
+    { nome: "Gabriel Gadí", cargo: "Colo de Deus", foto: "/pregadores/gadi.jpg" },
+    { nome: "Bruna Fernandes", cargo: "Colo de Deus", foto: "/pregadores/bruna-fernandes.jpg" },
+    { nome: "Alex & Fernanda", cargo: "Juventude Fogo Santo", foto: "/pregadores/alex-e-fernanda.jpg" },
+    { nome: "Gabriel Beraldi", cargo: "Setor da Juventude", foto: "/pregadores/gabriel-beraldi.jpg" },
   ];
+
   return (
     <section id="lineup" className="mx-auto max-w-7xl px-6 py-16">
-      <header className="mb-10">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-orange-500">Line-up</h2>
+      <header className="mb-10 text-center">
+        <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-500 via-red-500 to-yellow-400 text-transparent bg-clip-text">
+          Pregadores &amp; Louvor
+        </h2>
         <p className="mt-2 text-xl text-zinc-300">Quem conduz essa experiência</p>
       </header>
-      <h3 className="mb-4 text-lg font-semibold text-zinc-400">Louvor</h3>
-      <div className="grid gap-6 md:grid-cols-3">
-        <article className="rounded-2xl bg-zinc-900/70 ring-1 ring-zinc-800 p-6 text-center">
-          <h4 className="text-2xl font-bold text-white">Ministério da Colo de Deus</h4>
-          <p className="mt-3 text-zinc-300">Conduzindo momentos intensos de louvor e adoração durante o retiro.</p>
-        </article>
-      </div>
-      <h3 className="mt-12 mb-4 text-lg font-semibold text-zinc-400">Temas das Pregações</h3>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {TEMAS.map(({ titulo, descricao, Icon }) => (
-          <article key={titulo} className="rounded-2xl bg-zinc-900/70 ring-1 ring-zinc-800 p-6 hover:ring-orange-500/50 transition">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-600/20">
-              <Icon className="h-6 w-6 text-orange-500" />
+
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {PREGADORES.map((p) => (
+          <article
+            key={p.nome}
+            className="rounded-2xl bg-zinc-900/70 ring-1 ring-zinc-800 p-6 text-center hover:ring-orange-500/50 transition"
+          >
+            {/* Foto com borda gradiente estilo InFLAMA */}
+            <div className="mx-auto h-36 w-36 rounded-full overflow-hidden p-[2px] bg-gradient-to-r from-orange-500 via-red-500 to-yellow-400 shadow-lg">
+              <div className="h-full w-full rounded-full overflow-hidden bg-neutral-950">
+                <Image
+                  src={p.foto}
+                  alt={p.nome}
+                  width={288}
+                  height={288}
+                  className="h-full w-full object-cover"
+                />
+              </div>
             </div>
-            <h4 className="text-xl font-bold text-white">{titulo}</h4>
-            <p className="mt-2 text-zinc-300">{descricao}</p>
+
+            <h4 className="mt-4 text-xl font-bold text-white">{p.nome}</h4>
+            <p className="mt-1 text-zinc-400">{p.cargo}</p>
           </article>
         ))}
       </div>
+      
+      {/* Seção de Louvor */}
+      <div className="mt-16 text-center">
+        <h3 className="text-2xl font-bold text-white mb-4">Ministério de Música</h3>
+        <div className="flex flex-col items-center justify-center">
+          <div className="h-36 w-36 rounded-full overflow-hidden p-[2px] bg-gradient-to-r from-orange-500 via-red-500 to-yellow-400 shadow-lg">
+            <div className="h-full w-full rounded-full overflow-hidden bg-neutral-950">
+              <Image
+                src="/pregadores/colo-de-deus.jpg"
+                alt="Ministério de Música - Colo de Deus"
+                width={288}
+                height={288}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <h4 className="mt-4 text-xl font-bold text-white">Colo de Deus</h4>
+          <p className="mt-1 text-zinc-400">Conduzindo os momentos de louvor e adoração</p>
+        </div>
+      </div>
+
     </section>
   );
 }
@@ -1717,7 +1747,7 @@ export default function Page() {
         <SobreRetiro />
         <DestaquesCarousel />
         <TimesInflama />
-        <Lineup />
+        <Pregadores />
         <ChecklistSection />
         <Apoio />
         <FAQ />
