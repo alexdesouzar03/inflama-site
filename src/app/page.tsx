@@ -147,7 +147,7 @@ function Section({
 
 /* =================== NAVBAR =================== */
 /* =================== NAVBAR =================== */
-function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
+function NavbarDrawer({ onOpenForm, vagasRestantes }: { onOpenForm: () => void; vagasRestantes: number }) {
   const [open, setOpen] = useState(false);
   const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
 
@@ -217,7 +217,7 @@ function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
             onClick={onOpenForm}
             className="rounded-full bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
           >
-            Inscreva-se
+            {vagasRestantes > 0 ? "Inscreva-se" : "Entrar na lista de espera"}
           </button>
         </nav>
 
@@ -290,7 +290,7 @@ function NavbarDrawer({ onOpenForm }: { onOpenForm: () => void }) {
                 onClick={closeAnd(onOpenForm)}
                 className="mt-2 rounded-xl bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
               >
-                Inscreva-se
+                {vagasRestantes > 0 ? "Inscreva-se" : "Entrar na lista de espera"}
               </button>
             </nav>
           </aside>
@@ -439,22 +439,28 @@ function HeroInflama({
         </div>
 
         {/* vagas + barra de progresso */}
-        <div className="mt-5 mx-auto w-full max-w-md">
-          <div className="text-sm text-neutral-300">
-          Preenchidas <b className="text-white">{used}</b> de{" "}
-          <b className="text-white">{totalSeats}</b> vagas
-        </div>
-          <div className="mt-2 h-2 w-full rounded-full bg-neutral-800 overflow-hidden ring-1 ring-neutral-700">
+        <div className="mt-6 mx-auto w-full max-w-lg">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-neutral-300">Inscrições</span>
+            <span className="inline-flex items-center rounded-full bg-neutral-900/70 px-2.5 py-0.5 text-neutral-100 ring-1 ring-neutral-700">
+              {pct}%
+            </span>
+          </div>
+
+          <div
+            className="mt-2 h-3 w-full rounded-full bg-neutral-800 overflow-hidden ring-1 ring-neutral-700"
+            role="progressbar"
+            aria-label="Inscrições"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={pct}
+          >
             <div
-              className="h-full bg-gradient-to-r from-orange-500 via-red-500 to-amber-400"
+              className="h-full bg-gradient-to-r from-orange-500 via-rose-500 to-amber-400 transition-[width] duration-500 ease-out"
               style={{ width: `${pct}%` }}
-              aria-label={`Inscrições: ${pct}% preenchidas`}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={pct}
             />
           </div>
+
         </div>
 
         {/* CTAs */}
@@ -463,7 +469,7 @@ function HeroInflama({
             onClick={onInscrever}
             className={`px-8 py-4 rounded-full bg-gradient-to-r ${COLORS.grad} font-bold text-lg shadow-lg hover:scale-[1.03] active:scale-100 transition`}
           >
-            INSCREVA-SE
+            {remainingSeats > 0 ? "INSCREVA-SE" : "ENTRAR NA LISTA DE ESPERA"}
           </button>
           <a
             href="#apoio"
@@ -1350,7 +1356,7 @@ function Field({
 }
 
 /* =================== INSCRIÇÃO (Form) =================== */
-function InscricaoForm({ onClose }: { onClose: () => void }) {
+function InscricaoForm({ onClose, remainingSeats, waitlistMode = false }: { onClose: () => void; remainingSeats: number; waitlistMode?: boolean }) {
   type Sexo = "M" | "F";
 
   // WhatsApp de recebimento dos comprovantes
@@ -1414,16 +1420,17 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
     const e: Record<string, string> = {};
     if (!form.nome.trim()) e.nome = "Informe o nome";
     if (!form.email.trim()) e.email = "Informe o e-mail";
-    if (!form.whatsapp.trim()) e.whatsapp = "Informe o WhatsApp";  // 👈 novo
+    if (!form.whatsapp.trim()) e.whatsapp = "Informe o WhatsApp";
     if (!form.nascimento) e.nascimento = "Informe a data";
     if (!form.cidade.trim()) e.cidade = "Informe a cidade";
     if (!form.sexo) e.sexo = "Selecione";
     if (form.nascimento && idade < 12) e.nascimento = "Idade mínima: 12 anos";
+
     if (!form.resp1Nome.trim() || !form.resp1Tel.trim()) e.resp1 = "Responsável 1 obrigatório";
     if (!form.resp2Nome.trim() || !form.resp2Tel.trim()) e.resp2 = "Responsável 2 obrigatório";
     if (idade < 16 && !form.termoMenor) e.termo = "Obrigatório para menores de 16";
     return e;
-}, [form, idade]);
+  }, [form, idade, waitlistMode]);
 
   // ---- SETTERS ESTÁVEIS E TIPADOS ----
   const setField = useCallback(
@@ -1442,12 +1449,11 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
   );
 
 
-  // SUBMIT — salva e abre modal com pagamento
+  // SUBMIT — salva e abre modal com pagamento ou lista de espera
   const submit = useCallback(
     async (ev: React.FormEvent) => {
       ev.preventDefault();
 
-      // já está enviando? evita múltiplos cliques
       if (isSubmitting) return;
 
       if (Object.keys(errors).length) {
@@ -1457,7 +1463,9 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
 
       setIsSubmitting(true);
       try {
-        await salvarInscricao({
+        const isWaitlist = waitlistMode || remainingSeats <= 0;
+
+        const basePayload = {
           nome: form.nome,
           email: form.email,
           whatsapp: form.whatsapp,
@@ -1468,9 +1476,17 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
           resp2: `${form.resp2Nome} - ${form.resp2Tel}`,
           alergias: form.alergias,
           restricoes: form.restricoes,
-        });
+        };
 
-        setOpenPay(true);
+        if (isWaitlist) {
+          await salvarInscricao({ ...(basePayload as any), status: "lista-espera" } as any);
+          alert("Você entrou na lista de espera! 🙌 Entrar na lista não garante uma vaga — caso surjam desistências ou novas vagas, entraremos em contato pelo WhatsApp para confirmar sua participação.");
+          onClose();
+          return;
+        } else {
+          await salvarInscricao(basePayload as any);
+          setOpenPay(true);
+        }
       } catch (e) {
         console.error(e);
         alert("Não foi possível enviar. Tente novamente.");
@@ -1478,7 +1494,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
         setIsSubmitting(false);
       }
     },
-    [errors, form, isSubmitting]
+    [errors, form, isSubmitting, onClose, remainingSeats, waitlistMode]
   );
 
   return (
@@ -1604,53 +1620,55 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
         </Field>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field id="resp1Nome" label="Responsável 1 – Nome" error={errors.resp1}>
-          <input
-            id="resp1Nome"
-            name="resp1Nome"
-            type="text"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
-            value={form.resp1Nome}
-            onChange={handleText}
-          />
-        </Field>
-        <Field id="resp1Tel" label="Responsável 1 – Telefone/WhatsApp" error={errors.resp1}>
-          <input
-            id="resp1Tel"
-            name="resp1Tel"
-            type="text"
-            inputMode="tel"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
-            value={form.resp1Tel}
-            onChange={handleText}
-          />
-        </Field>
-      </div>
+      <>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field id="resp1Nome" label="Responsável 1 – Nome" error={errors.resp1}>
+            <input
+              id="resp1Nome"
+              name="resp1Nome"
+              type="text"
+              className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
+              value={form.resp1Nome}
+              onChange={handleText}
+            />
+          </Field>
+          <Field id="resp1Tel" label="Responsável 1 – Telefone/WhatsApp" error={errors.resp1}>
+            <input
+              id="resp1Tel"
+              name="resp1Tel"
+              type="text"
+              inputMode="tel"
+              className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
+              value={form.resp1Tel}
+              onChange={handleText}
+            />
+          </Field>
+        </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field id="resp2Nome" label="Responsável 2 – Nome" error={errors.resp2}>
-          <input
-            id="resp2Nome"
-            name="resp2Nome"
-            type="text"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
-            value={form.resp2Nome}
-            onChange={handleText}
-          />
-        </Field>
-        <Field id="resp2Tel" label="Responsável 2 – Telefone/WhatsApp" error={errors.resp2}>
-          <input
-            id="resp2Tel"
-            name="resp2Tel"
-            type="text"
-            inputMode="tel"
-            className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
-            value={form.resp2Tel}
-            onChange={handleText}
-          />
-        </Field>
-      </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field id="resp2Nome" label="Responsável 2 – Nome" error={errors.resp2}>
+            <input
+              id="resp2Nome"
+              name="resp2Nome"
+              type="text"
+              className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
+              value={form.resp2Nome}
+              onChange={handleText}
+            />
+          </Field>
+          <Field id="resp2Tel" label="Responsável 2 – Telefone/WhatsApp" error={errors.resp2}>
+            <input
+              id="resp2Tel"
+              name="resp2Tel"
+              type="text"
+              inputMode="tel"
+              className="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 caret-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 outline-none"
+              value={form.resp2Tel}
+              onChange={handleText}
+            />
+          </Field>
+        </div>
+      </>
 
       {idade < 16 && (
         <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
@@ -1691,7 +1709,7 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
             }`}
           >
             <QrCode className="h-5 w-5" />
-            {isSubmitting ? "Enviando..." : "Enviar inscrição"}
+            {isSubmitting ? "Enviando..." : waitlistMode ? "Entrar na lista de espera" : "Enviar inscrição"}
           </button>
         </div>
       </div>
@@ -1731,17 +1749,29 @@ function InscricaoForm({ onClose }: { onClose: () => void }) {
 /* =================== PÁGINA =================== */
 export default function Page() {
   const [openForm, setOpenForm] = useState(false);
+  const [waitlistMode, setWaitlistMode] = useState(false);
+  const vagasRestantes = 2; // ajuste aqui para 0 quando esgotar
+
+  const abrirCTA = () => {
+    if (vagasRestantes <= 0) {
+      setWaitlistMode(true);
+      setOpenForm(true);
+    } else {
+      setWaitlistMode(false);
+      setOpenForm(true);
+    }
+  };
 
   return (
     <div className={`${COLORS.bg} ${COLORS.text}`} id="top">
-      <NavbarDrawer onOpenForm={() => setOpenForm(true)} />
+      <NavbarDrawer onOpenForm={abrirCTA} vagasRestantes={vagasRestantes} />
 
       <main className="pt-24">
         <HeroInflama
           eventStart={EVENTO.inicioISO}
           totalSeats={90}
-          remainingSeats={5}
-          onInscrever={() => setOpenForm(true)}
+          remainingSeats={vagasRestantes}
+          onInscrever={abrirCTA}
         />
         <TemaBiblico />
         <SobreRetiro />
@@ -1788,8 +1818,16 @@ export default function Page() {
         }
       `}</style>
 
-      <Modal open={openForm} onClose={() => setOpenForm(false)} title="Inscrição – InFLAMA 2025">
-        <InscricaoForm onClose={() => setOpenForm(false)} />
+      <Modal
+        open={openForm}
+        onClose={() => setOpenForm(false)}
+        title={waitlistMode ? "Lista de Espera – InFLAMA 2025" : "Inscrição – InFLAMA 2025"}
+      >
+        <InscricaoForm
+          onClose={() => setOpenForm(false)}
+          remainingSeats={vagasRestantes}
+          waitlistMode={waitlistMode}
+        />
       </Modal>
     </div>
   );
