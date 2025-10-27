@@ -1750,7 +1750,7 @@ function InscricaoForm({ onClose, remainingSeats, waitlistMode = false }: { onCl
 export default function Page() {
   const [openForm, setOpenForm] = useState(false);
   const [waitlistMode, setWaitlistMode] = useState(false);
-  const vagasRestantes = 2; // ajuste aqui para 0 quando esgotar
+  const vagasRestantes = 0; // ajuste aqui para 0 quando esgotar
 
   const abrirCTA = () => {
     if (vagasRestantes <= 0) {
