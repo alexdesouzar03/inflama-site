@@ -40,15 +40,17 @@ const COLORS = {
   grad: "from-orange-500 via-red-500 to-yellow-400",
 };
 
+const INSCRICOES_ABERTAS = false as const; // mude para true quando reabrir inscrições
+
 const EVENTO = {
-  nome: "Retiro InFLAMA 2025",
+  nome: "Retiro InFLAMA 2026",
   slogan: "Seja luz, seja fogo, seja d’Ele!",
-  data: "08–09 de novembro de 2025",
-  local: "Chácara Provérbios • Apucarana/PR",
+  data: "07–08 de novembro de 2026",
+  local: "Local em definição...",
   preco: 150,
   vagasTotal: 80,
-  faixaEtaria: "12–19 anos",
-  inicioISO: "2025-11-08T08:00:00-03:00",
+  faixaEtaria: "12–24 anos",
+  inicioISO: "2026-11-07T08:00:00-03:00",
 };
 
 const CONTATO = {
@@ -147,7 +149,15 @@ function Section({
 
 /* =================== NAVBAR =================== */
 /* =================== NAVBAR =================== */
-function NavbarDrawer({ onOpenForm, vagasRestantes }: { onOpenForm: () => void; vagasRestantes: number }) {
+function NavbarDrawer({
+  onOpenForm,
+  vagasRestantes,
+  inscricoesAbertas,
+}: {
+  onOpenForm: () => void;
+  vagasRestantes: number;
+  inscricoesAbertas: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
 
@@ -193,7 +203,7 @@ function NavbarDrawer({ onOpenForm, vagasRestantes }: { onOpenForm: () => void; 
         <a href="#top" className="text-xl md:text-2xl font-extrabold">
           <span className="text-zinc-200">JFS • </span>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-amber-400">
-            InFLAMA 2025
+            InFLAMA 2026
           </span>
         </a>
 
@@ -213,12 +223,23 @@ function NavbarDrawer({ onOpenForm, vagasRestantes }: { onOpenForm: () => void; 
             <Instagram className="h-5 w-5" />
             <span className="hidden lg:inline">{CONTATO.instagramHandle}</span>
           </a>
-          <button
-            onClick={onOpenForm}
-            className="rounded-full bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
-          >
-            {vagasRestantes > 0 ? "Inscreva-se" : "Entrar na lista de espera"}
-          </button>
+          {inscricoesAbertas ? (
+            <button
+              onClick={onOpenForm}
+              className="rounded-full bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
+            >
+              {vagasRestantes > 0 ? "Inscreva-se" : "Entrar na lista de espera"}
+            </button>
+          ) : (
+            <a
+              href={`https://wa.me/${CONTATO.whatsappLink}?text=Quero%20saber%20sobre%20o%20Retiro%20InFLAMA%202026`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
+            >
+              Quero ser avisado das inscrições
+            </a>
+          )}
         </nav>
 
         {/* botão mobile */}
@@ -286,12 +307,24 @@ function NavbarDrawer({ onOpenForm, vagasRestantes }: { onOpenForm: () => void; 
                 {CONTATO.instagramHandle}
               </a>
 
-              <button
-                onClick={closeAnd(onOpenForm)}
-                className="mt-2 rounded-xl bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
-              >
-                {vagasRestantes > 0 ? "Inscreva-se" : "Entrar na lista de espera"}
-              </button>
+              {inscricoesAbertas ? (
+                <button
+                  onClick={closeAnd(onOpenForm)}
+                  className="mt-2 rounded-xl bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95"
+                >
+                  {vagasRestantes > 0 ? "Inscreva-se" : "Entrar na lista de espera"}
+                </button>
+              ) : (
+                <a
+                  href={`https://wa.me/${CONTATO.whatsappLink}?text=Quero%20saber%20sobre%20o%20Retiro%20InFLAMA%202026`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 rounded-xl bg-gradient-to-r from-orange-600 via-rose-500 to-amber-500 px-4 py-2 font-semibold text-white shadow hover:opacity-95 text-center"
+                  onClick={closeAnd()}
+                >
+                  Quero ser avisado das inscrições
+                </a>
+              )}
             </nav>
           </aside>
         </div>
@@ -383,16 +416,20 @@ function HeroInflama({
   totalSeats,
   remainingSeats,
   onInscrever,
+  inscricoesAbertas,
 }: {
   eventStart: string;
   totalSeats: number;
   remainingSeats: number;
   onInscrever: () => void;
+  inscricoesAbertas: boolean;
 }) {
   const { dias, horas, minutos, segundos } = useCountdown(eventStart);
 
   const used = Math.max(0, totalSeats - remainingSeats);
-  const pct  = Math.min(100, Math.round((used / totalSeats) * 100));
+  const pct = inscricoesAbertas
+    ? Math.min(100, Math.round((used / totalSeats) * 100))
+    : 0;
 
   return (
     <header className="relative overflow-hidden pt-28 md:pt-32">
@@ -406,7 +443,7 @@ function HeroInflama({
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
         <h1 className="text-5xl md:text-7xl font-black leading-tight bg-gradient-to-r from-orange-400 via-red-500 to-yellow-300 text-transparent bg-clip-text">
-          Retiro InFLAMA 2025
+          {EVENTO.nome}
         </h1>
 
         {/* badges resumidas */}
@@ -415,10 +452,10 @@ function HeroInflama({
             Seja luz, seja fogo, seja d’Ele!
           </span>
           <span className="px-3 py-1 rounded-full bg-neutral-900/70 ring-1 ring-neutral-800">
-            08–09 nov · Chácara Provérbios · Apucarana/PR
+            {EVENTO.data} · {EVENTO.local}
           </span>
           <span className="px-3 py-1 rounded-full bg-neutral-900/70 ring-1 ring-neutral-800">
-            Faixa etária: <b className="text-white">12–24</b> anos
+            Faixa etária: <b className="text-white">{EVENTO.faixaEtaria}</b>
           </span>
         </div>
 
@@ -442,9 +479,15 @@ function HeroInflama({
         <div className="mt-6 mx-auto w-full max-w-lg">
           <div className="flex items-center justify-between text-sm">
             <span className="text-neutral-300">Inscrições</span>
-            <span className="inline-flex items-center rounded-full bg-neutral-900/70 px-2.5 py-0.5 text-neutral-100 ring-1 ring-neutral-700">
-              {pct}%
-            </span>
+            {inscricoesAbertas ? (
+              <span className="inline-flex items-center rounded-full bg-neutral-900/70 px-2.5 py-0.5 text-neutral-100 ring-1 ring-neutral-700">
+                {pct}%
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-neutral-900/70 px-2.5 py-0.5 text-xs text-neutral-300 ring-1 ring-neutral-700">
+                Em breve
+              </span>
+            )}
           </div>
 
           <div
@@ -456,8 +499,10 @@ function HeroInflama({
             aria-valuenow={pct}
           >
             <div
-              className="h-full bg-gradient-to-r from-orange-500 via-rose-500 to-amber-400 transition-[width] duration-500 ease-out"
-              style={{ width: `${pct}%` }}
+              className={`h-full bg-gradient-to-r from-orange-500 via-rose-500 to-amber-400 transition-[width] duration-500 ease-out ${
+                !inscricoesAbertas ? "opacity-40" : ""
+              }`}
+              style={{ width: inscricoesAbertas ? `${pct}%` : "0%" }}
             />
           </div>
 
@@ -469,7 +514,11 @@ function HeroInflama({
             onClick={onInscrever}
             className={`px-8 py-4 rounded-full bg-gradient-to-r ${COLORS.grad} font-bold text-lg shadow-lg hover:scale-[1.03] active:scale-100 transition`}
           >
-            {remainingSeats > 0 ? "INSCREVA-SE" : "ENTRAR NA LISTA DE ESPERA"}
+            {inscricoesAbertas
+              ? remainingSeats > 0
+                ? "INSCREVA-SE"
+                : "ENTRAR NA LISTA DE ESPERA"
+              : "Quero ser avisado das inscrições"}
           </button>
           <a
             href="#apoio"
@@ -516,7 +565,7 @@ function TemaBiblico() {
       <div className="mt-6 rounded-2xl bg-neutral-900/70 ring-1 ring-neutral-800 p-6 md:p-8">
         <div className="flex items-center gap-3 text-orange-500">
           <Flame className="h-6 w-6" />
-          <span className="text-lg font-semibold">Tema 2025</span>
+          <span className="text-lg font-semibold">Tema 2026</span>
         </div>
 
         <h3 className="mt-3 text-2xl md:text-3xl font-bold text-white">
@@ -651,7 +700,7 @@ function DestaquesCarousel() {
   }, [step]);
 
   return (
-    <Section id="destaques" title="Destaques" subtitle="O que te espera no InFLAMA 2025">
+    <Section id="destaques" title="Destaques" subtitle="O que te espera no InFLAMA 2026">
       <div className="relative">
         <button
           type="button"
@@ -742,68 +791,21 @@ function TimesInflama() {
 
 /* =================== PREGADORES (Grid com fotos) =================== */
 function Pregadores() {
-  const PREGADORES = [
-    { nome: "João Rêgo", cargo: "Colo de Deus", foto: "/pregadores/joao-rego.jpg" },
-    { nome: "Gabriel Gadí", cargo: "Colo de Deus", foto: "/pregadores/gadi.jpg" },
-    { nome: "Bruna Fernandes", cargo: "Colo de Deus", foto: "/pregadores/bruna-fernandes.jpg" },
-    { nome: "Alex & Fernanda", cargo: "Juventude Fogo Santo", foto: "/pregadores/alex-e-fernanda.jpg" },
-    { nome: "Gabriel Beraldi", cargo: "Setor da Juventude", foto: "/pregadores/gabriel-beraldi.jpg" },
-  ];
-
   return (
     <section id="lineup" className="mx-auto max-w-7xl px-6 py-16">
       <header className="mb-10 text-center">
         <h2 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-orange-500 via-red-500 to-yellow-400 text-transparent bg-clip-text">
           Pregadores &amp; Louvor
         </h2>
-        <p className="mt-2 text-xl text-zinc-300">Quem conduz essa experiência</p>
+        <p className="mt-2 text-xl text-zinc-300">
+          Em breve divulgaremos os pregadores e o louvor do InFLAMA 2026.
+        </p>
       </header>
-
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {PREGADORES.map((p) => (
-          <article
-            key={p.nome}
-            className="rounded-2xl bg-zinc-900/70 ring-1 ring-zinc-800 p-6 text-center hover:ring-orange-500/50 transition"
-          >
-            {/* Foto com borda gradiente estilo InFLAMA */}
-            <div className="mx-auto h-36 w-36 rounded-full overflow-hidden p-[2px] bg-gradient-to-r from-orange-500 via-red-500 to-yellow-400 shadow-lg">
-              <div className="h-full w-full rounded-full overflow-hidden bg-neutral-950">
-                <Image
-                  src={p.foto}
-                  alt={p.nome}
-                  width={288}
-                  height={288}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-
-            <h4 className="mt-4 text-xl font-bold text-white">{p.nome}</h4>
-            <p className="mt-1 text-zinc-400">{p.cargo}</p>
-          </article>
-        ))}
-      </div>
-      
-      {/* Seção de Louvor */}
-      <div className="mt-16 text-center">
-        <h3 className="text-2xl font-bold text-white mb-4">Ministério de Música</h3>
-        <div className="flex flex-col items-center justify-center">
-          <div className="h-36 w-36 rounded-full overflow-hidden p-[2px] bg-gradient-to-r from-orange-500 via-red-500 to-yellow-400 shadow-lg">
-            <div className="h-full w-full rounded-full overflow-hidden bg-neutral-950">
-              <Image
-                src="/pregadores/colo-de-deus.jpg"
-                alt="Ministério de Música - Colo de Deus"
-                width={288}
-                height={288}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </div>
-          <h4 className="mt-4 text-xl font-bold text-white">Colo de Deus</h4>
-          <p className="mt-1 text-zinc-400">Conduzindo os momentos de louvor e adoração</p>
+      <div className="mt-10 flex justify-center">
+        <div className="rounded-2xl bg-zinc-900/70 ring-1 ring-zinc-800 px-6 py-4 text-center text-zinc-300">
+          Carregando informações… em breve você vai conhecer quem vai conduzir o retiro 2026. 🔥
         </div>
       </div>
-
     </section>
   );
 }
@@ -1043,7 +1045,7 @@ function Apoio() {
 /* =================== FAQ =================== */
 function FAQ() {
   return (
-    <Section id="faq" title="Perguntas Frequentes" subtitle="Dúvidas rápidas sobre o InFLAMA 2025">
+    <Section id="faq" title="Perguntas Frequentes" subtitle="Dúvidas rápidas sobre o InFLAMA 2026">
       <div className="max-w-3xl mx-auto rounded-2xl border border-neutral-800 overflow-hidden divide-y divide-neutral-800">
 
         {/* Geral */}
@@ -1750,21 +1752,36 @@ function InscricaoForm({ onClose, remainingSeats, waitlistMode = false }: { onCl
 export default function Page() {
   const [openForm, setOpenForm] = useState(false);
   const [waitlistMode, setWaitlistMode] = useState(false);
-  const vagasRestantes = 0; // ajuste aqui para 0 quando esgotar
+
+  // Quando INSCRICOES_ABERTAS = false, não há vagas disponíveis (modo teaser / pós-evento)
+  const vagasRestantes = INSCRICOES_ABERTAS ? 10 : 0; // ajuste o 10 quando reabrir inscrições
 
   const abrirCTA = () => {
+    if (!INSCRICOES_ABERTAS) {
+      if (typeof window !== "undefined") {
+        window.open(
+          `https://wa.me/${CONTATO.whatsappLink}?text=Quero%20saber%20sobre%20o%20Retiro%20InFLAMA%202026`,
+          "_blank"
+        );
+      }
+      return;
+    }
+
     if (vagasRestantes <= 0) {
       setWaitlistMode(true);
-      setOpenForm(true);
     } else {
       setWaitlistMode(false);
-      setOpenForm(true);
     }
+    setOpenForm(true);
   };
 
   return (
     <div className={`${COLORS.bg} ${COLORS.text}`} id="top">
-      <NavbarDrawer onOpenForm={abrirCTA} vagasRestantes={vagasRestantes} />
+      <NavbarDrawer
+        onOpenForm={abrirCTA}
+        vagasRestantes={vagasRestantes}
+        inscricoesAbertas={INSCRICOES_ABERTAS}
+      />
 
       <main className="pt-24">
         <HeroInflama
@@ -1772,6 +1789,7 @@ export default function Page() {
           totalSeats={90}
           remainingSeats={vagasRestantes}
           onInscrever={abrirCTA}
+          inscricoesAbertas={INSCRICOES_ABERTAS}
         />
         <TemaBiblico />
         <SobreRetiro />
@@ -1785,7 +1803,7 @@ export default function Page() {
       </main>
 
       <footer className="border-t border-neutral-900/60 py-10 text-center text-sm text-neutral-400 space-y-2">
-        <div>© {new Date().getFullYear()} Juventude Fogo Santo — InFLAMA 2025</div>
+        <div>© {new Date().getFullYear()} Juventude Fogo Santo — InFLAMA 2026</div>
         <div className="flex items-center justify-center gap-4">
           <a
             href={CONTATO.instagram}
@@ -1821,7 +1839,7 @@ export default function Page() {
       <Modal
         open={openForm}
         onClose={() => setOpenForm(false)}
-        title={waitlistMode ? "Lista de Espera – InFLAMA 2025" : "Inscrição – InFLAMA 2025"}
+        title={waitlistMode ? "Lista de Espera – InFLAMA 2026" : "Inscrição – InFLAMA 2026"}
       >
         <InscricaoForm
           onClose={() => setOpenForm(false)}
